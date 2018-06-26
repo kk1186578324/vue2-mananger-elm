@@ -130,7 +130,11 @@
                                     @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                             </template>
                         </el-table-column>
+
                     </el-table>
+                    <el-form-item>
+                        <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+                    </el-form-item>
 
 
                 </el-form>
