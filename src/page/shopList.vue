@@ -39,14 +39,8 @@
             prop="name">
         </el-table-column>
         <el-table-column
-            label="店铺地址"
+            label="详细地址"
             prop="address">
-            <el-autocomplete
-                v-model="state4"
-                :fetch-suggestions="querySearchAsync"
-                placeholder="请输入内容"
-                @select="handleSelect"
-            ></el-autocomplete>
         </el-table-column>
         <el-table-column
             label="店铺介绍"
@@ -90,9 +84,16 @@
             <el-form-item label="店铺名称">
                 <el-input v-model="selectTable.name"></el-input>
             </el-form-item>
-            <el-form-item label="详细地址">
-
-                <el-input v-model="selectTable.address"></el-input>
+            <el-form-item label="详细地址" label-width="80px">
+                <el-autocomplete
+                    v-model="selectTable.address"
+                    :fetch-suggestions="querySearchAsync"
+                    placeholder="请输入地址"
+                    style="width: 100%"
+                    @select="addressSelect"
+                >
+                </el-autocomplete>
+                <span>当前城市：{{city.name}}</span>
             </el-form-item>
             <el-form-item label="店铺介绍">
                 <el-input v-model="selectTable.description"></el-input>
@@ -156,14 +157,9 @@
                 baseImgPath,
                 selectedCategory:[],
                 categoryOptions:[],
-                form: {
-                    name: '',
-                    region: '',
-                    introduce:'',
-                    cell:''
-                },
-                selectedOptions: [],
-                selectedOptions2: []
+                city:{},//当前城市
+                restaurants: [],
+                timeout:  null
             }
         },
         created(){
@@ -171,8 +167,6 @@
             this.initData();
 
         },
-
-
         methods:{
             async initData(){
                 try{
@@ -222,7 +216,6 @@
             async getCategory(){
                 try{
                     const categories = await foodCategory();
-
                     console.log(categories);
                     categories.forEach(item => {
                         if (item.sub_categories.length) {
@@ -249,7 +242,7 @@
             },
             handleEdit(index,row){
 
-                console.log(index,row);
+
 
                 this.selectTable = row;
                 this.selectedCategory = row.category.split('/');
@@ -259,21 +252,88 @@
                     this.getCategory();
                 }
 
+            },
+            addFood(index,row){
 
-
+                this.$router.push({ path: 'addGoods', query: { restaurant_id: row.id }})
 
             },
-            addFood(){
+            async handleDelete(index,row){
 
-            },
-            handleDelete(){
+                try{
+
+                    const res = await deleteResturant(row.id);
+
+                    if (res.status == 1) {
+                        this.$message({
+                            type: 'success',
+                            message: '删除店铺信息成功'
+                        });
+                        this.getResturants();
+                    }else{
+                        this.$message({
+                            type: 'error',
+                            message: res.message
+                        });
+                    }
+
+
+
+                }catch (err){
+
+                    console.log(err)
+
+                }
+
+
+
+
+
+
+
+                console.log(index,row);
+
+
+
+
+
+
 
             },
             async onSubmit() {
 
-                this.dialogFormVisible = false;
 
-                Object.assign(this.selectTable, this.address)
+                this.dialogVisible = false;
+                try{
+
+                    Object.assign(this.selectTable, this.address);
+
+                      console.log(this.selectedCategory);
+                    this.selectTable.category = this.selectedCategory.join('/');
+                    const res = await updateResturant(this.selectTable)
+
+                    if (res.status == 1) {
+                        this.$message({
+                            type: 'success',
+                            message: '更新店铺信息成功'
+                        });
+                        this.getResturants();
+                    }else{
+                        this.$message({
+                            type: 'error',
+                            message: res.message
+                        });
+                    }
+
+
+                }catch(err) {
+
+
+                }
+
+
+
+                console.log(this.selectTable, this.address)
 
 
                 console.log('submit!');
@@ -284,6 +344,34 @@
             handleChange(value) {
                 console.log(value);
             },
+            async querySearchAsync(queryString, cb) {
+
+
+                if(queryString){
+                    try{
+                        const cityList = await searchplace(this.city.id,queryString);
+                        if(cityList instanceof Array){
+                            cityList.map(item =>{
+                                item.value = item.address;
+                                return item;
+                            })
+                            cb(cityList)
+                        }
+
+                    }catch (err){
+                        console.log(err)
+                    }
+
+                }
+            },
+
+            addressSelect(item) {
+
+                const {address, latitude, longitude} = item;
+                this.address = {address, latitude, longitude};
+            },
+
+
             handleAvatarSuccess(res, file) {
 
                 console.log(res, file);

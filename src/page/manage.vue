@@ -27,8 +27,8 @@
               <i class="el-icon-circle-plus"></i>
               <span>添加数据</span>
             </template>
-            <el-menu-item index="2-1">添加商铺</el-menu-item>
-            <el-menu-item index="2-2">添加商品</el-menu-item>
+            <el-menu-item index="addShop">添加商铺</el-menu-item>
+            <el-menu-item index="addGoods">添加商品</el-menu-item>
           </el-submenu>
           <el-submenu index="3">
             <template slot="title">
