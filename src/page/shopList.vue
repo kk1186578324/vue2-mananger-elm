@@ -212,7 +212,7 @@
                 console.log(`当前页: ${val}`);
             },
 
-
+      //获取店铺分类
             async getCategory(){
                 try{
                     const categories = await foodCategory();
@@ -285,20 +285,6 @@
 
                 }
 
-
-
-
-
-
-
-                console.log(index,row);
-
-
-
-
-
-
-
             },
             async onSubmit() {
 
@@ -331,12 +317,6 @@
 
                 }
 
-
-
-                console.log(this.selectTable, this.address)
-
-
-                console.log('submit!');
             },
             handleClose(){
 
@@ -354,7 +334,7 @@
                             cityList.map(item =>{
                                 item.value = item.address;
                                 return item;
-                            })
+                            });
                             cb(cityList)
                         }
 

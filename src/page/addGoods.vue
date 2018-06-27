@@ -11,8 +11,8 @@
                     <el-col :span="14" :offset="4">
                         <el-form :model="categoryForm"  ref="categoryForm" label-width="100px"
                                  class="demo-ruleForm">
-                            <el-form-item label="食品种类" prop="region">
-                                <el-select v-model="categoryForm.categorySelect" placeholder="selectValue.label">
+                            <el-form-item label="食品种类" prop="name">
+                                <el-select v-model="categoryForm.name" @change="changeValue" placeholder="请选择">
                                     <el-option
                                      v-for = "item in categoryForm.categoryList"
                                      :key = "item.value"
@@ -22,11 +22,11 @@
                                     </el-option>
                                 </el-select>
                             </el-form-item>
-                            <el-form-item label="种类描述" prop="name">
-                                <el-input v-model="ruleForm.name"></el-input>
+                            <el-form-item label="种类描述" prop="description">
+                                <el-input v-model="categoryForm.description"></el-input>
                             </el-form-item>
                             <el-form-item>
-                                <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
+                                <el-button type="primary" @click="submitForm('categoryForm')">提交</el-button>
                             </el-form-item>
                         </el-form>
 
@@ -84,7 +84,7 @@
                                              label="描述文字"></el-input-number>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="submitForm('ruleForm')">确认添加食品</el-button>
+                            <el-button type="primary" @click="addSubmitForm('ruleForm')">确认添加食品</el-button>
                         </el-form-item>
                     </el-form>
 
@@ -115,9 +115,9 @@
                 selectTable: {},
 
                 categoryForm:{
-                    categorySelect:{},
-                    categoryList:[]
-
+                    categoryList:[],
+                    description:"",
+                    name:""
                 },
                 form: {},
                 num1: 0,
@@ -165,11 +165,22 @@
 
             console.log(this.$route.query)
 
-
+           this.initGetCategory();
         },
         methods: {
             async initGetCategory () {
-
+                const  category = await getCategory(this.$route.query.restaurant_id);
+                console.log(category)
+                if(category.status==1){
+                    category.category_list.map((item,index)=>{
+                       item.value = index;
+                       item.label = item.name;
+                    });
+                    this.categoryForm.categoryList = category.category_list;
+                }else {
+                    console.log(category)
+                }
+                console.log(category.category_list);
 
 
 
@@ -177,15 +188,48 @@
 
 
             },
+            changeValue(value,label){
+
+                let obj = {};
+                obj =  this.categoryForm.categoryList.find((item)=>{
+                    return item.value === value;
+                });
+                this.categoryForm.name = obj.label;
+
+            },
             submitForm(formName) {
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        alert('submit!');
-                    } else {
-                        console.log('error submit!!');
+
+                this.$refs[formName].validate(async (valid)=>{
+                    if(valid){
+                        var param = {
+                            name:this.categoryForm.name,
+                            description:this.categoryForm.description,
+                            restaurant_id:this.$route.query.restaurant_id
+                        }
+                        let result = await addCategory(param);
+                        if(result.status==1){
+                            this.$message({
+                                type: 'success',
+                                message: '添加成功'
+                            });
+
+                        }
+
+                    }else {
+
+                        this.$notify({
+                            title: '错误',
+                            message: '请检查输入',
+                            offset:100
+                        });
                         return false;
                     }
+
                 });
+
+            },
+            addSubmitForm(formName){
+
             },
             resetForm(formName) {
                 this.$refs[formName].resetFields();
@@ -194,6 +238,9 @@
 
             },
             beforeAvatarUpload() {
+
+            },
+            handleChange(){
 
             }
 
